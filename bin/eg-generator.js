@@ -4,7 +4,7 @@ const config = require('../lib/config');
 const { validate, find } = require('../lib/schemas');
 
 module.exports = class EgGenerator extends Generator {
-  constructor (args, opts) {
+  constructor(args, opts) {
     super(args, opts);
 
     this._configuration = null;
@@ -17,13 +17,13 @@ module.exports = class EgGenerator extends Generator {
     });
   }
 
-  configureCommand (configuration) {
+  configureCommand(configuration) {
     const builder = configuration.builder;
-    configuration.builder = yargs => {
+    configuration.builder = (yargs) => {
       return this._wrapConfig(builder(yargs));
     };
 
-    configuration.handler = argv => {
+    configuration.handler = (argv) => {
       this.env.argv = argv;
 
       const command = this.options.env.commandAliases[0][argv._[0]];
@@ -35,31 +35,34 @@ module.exports = class EgGenerator extends Generator {
     this._configuration = configuration;
   }
 
-  stdout (...args) {
+  stdout(...args) {
     // eslint-disable-next-line no-console
     console.log.apply(console, args);
   }
 
-  createSubCommand (name) {
+  createSubCommand(name) {
     const generatorName = `${this.constructor.namespace}:${name}`;
     return this.env.create(generatorName)._configuration;
   }
 
   // configuration defaults
-  _wrapConfig (yargs) {
+  _wrapConfig(yargs) {
     return yargs
       .boolean(['no-color', 'q', 'v'])
       .string(['H'])
       .describe('no-color', 'Disable color in prompts')
       .alias('q', 'quiet')
       .describe('q', 'Only show major pieces of output')
-      .describe('H', 'Header to send with each request to Express Gateway Admin API KEY:VALUE format')
+      .describe(
+        'H',
+        'Header to send with each request to Express Gateway Admin API KEY:VALUE format'
+      )
       .alias('v', 'verbose')
       .describe('v', 'Verbose output, will show request to Admin API')
       .group(['no-color', 'q'], 'Options:');
   }
 
-  _getAdminClientBaseURL () {
+  _getAdminClientBaseURL() {
     const gatewayConfig = config.gatewayConfig;
     const systemConfig = config.systemConfig;
 
@@ -90,7 +93,7 @@ module.exports = class EgGenerator extends Generator {
     return baseURL;
   }
 
-  _getAdminClientVerboseFlag () {
+  _getAdminClientVerboseFlag() {
     let verbose = false; // default
 
     if (this.argv && this.argv.v) {
@@ -102,7 +105,7 @@ module.exports = class EgGenerator extends Generator {
     return verbose;
   }
 
-  processHeaders (headers) {
+  processHeaders(headers) {
     const ArrayHeaders = Array.isArray(headers) ? headers : [headers];
 
     return ArrayHeaders.reduce((prev, header) => {
@@ -116,7 +119,7 @@ module.exports = class EgGenerator extends Generator {
     }, {});
   }
 
-  _promptAndValidate (object, schema, { skipPrompt = false } = {}) {
+  _promptAndValidate(object, schema, { skipPrompt = false } = {}) {
     let questions = [];
 
     if (!skipPrompt) {
@@ -124,10 +127,14 @@ module.exports = class EgGenerator extends Generator {
       const missingProperties = [];
       const modelSchema = find(schema).schema;
 
-      Object.keys(modelSchema.properties).forEach(prop => {
+      Object.keys(modelSchema.properties).forEach((prop) => {
         const descriptor = modelSchema.properties[prop];
         if (!object[prop]) {
-          if (!shouldPrompt && modelSchema.required && modelSchema.required.includes(prop)) {
+          if (
+            !shouldPrompt &&
+            modelSchema.required &&
+            modelSchema.required.includes(prop)
+          ) {
             shouldPrompt = true;
           }
 
@@ -136,7 +143,7 @@ module.exports = class EgGenerator extends Generator {
       });
 
       if (shouldPrompt) {
-        questions = missingProperties.map(p => {
+        questions = missingProperties.map((p) => {
           const required = modelSchema.required.includes(p.name)
             ? ' [required]'
             : '';
@@ -145,16 +152,19 @@ module.exports = class EgGenerator extends Generator {
             name: p.name,
             message: `Enter ${chalk.yellow(p.name)}${chalk.green(required)}:`,
             default: object[p.name] || p.descriptor.default,
-            validate: input => !modelSchema.required.includes(p.name) ||
+            validate: (input) =>
+              !modelSchema.required.includes(p.name) ||
               (!!input && modelSchema.required.includes(p.name)),
-            filter: input => input === '' && !modelSchema.required.includes(p.name) ? undefined : input
-
+            filter: (input) =>
+              input === '' && !modelSchema.required.includes(p.name)
+                ? undefined
+                : input
           };
         });
       }
     }
 
-    const validateData = data => {
+    const validateData = (data) => {
       const { isValid, error } = validate(schema, data);
       if (!isValid) {
         this.log.error(error);

@@ -5,6 +5,7 @@ const services = require('../../lib/services');
 const userService = services.user;
 const credentialService = services.credential;
 const db = require('../../lib/db');
+const { describe, it, before } = require('mocha');
 
 describe('User service tests', () => {
   describe('Insert tests', () => {
