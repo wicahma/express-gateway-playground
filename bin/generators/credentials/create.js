@@ -80,7 +80,7 @@ module.exports = class extends eg.Generator {
       // this is for values like [], {}
       try {
         credential[key] = JSON.parse(value);
-      } catch (err) {
+      } catch {
         credential[key] = value;
       }
     });

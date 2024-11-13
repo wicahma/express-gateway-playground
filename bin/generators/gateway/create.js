@@ -41,7 +41,7 @@ module.exports = class extends eg.Generator {
     });
   }
 
-  prompting () {
+  async prompting () {
     if (this.argv.type) {
       this.type = this.argv.type;
     }
@@ -83,7 +83,7 @@ module.exports = class extends eg.Generator {
       ]
     };
 
-    return Promise.resolve()
+    return await Promise.resolve()
       .then(() => {
         if (!this.name) {
           return this.prompt([nameQuestion])

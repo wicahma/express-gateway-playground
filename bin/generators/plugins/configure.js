@@ -29,7 +29,7 @@ module.exports = class extends eg.Generator {
         const prefixedName = PluginInstaller.PACKAGE_PREFIX + this.packageName;
         this.pluginManifest = this._getPluginManifest(prefixedName);
         this.packageName = prefixedName;
-      } catch (_) {
+      } catch {
         // This will fall through to the next conditional statement.
       }
     }
@@ -38,7 +38,7 @@ module.exports = class extends eg.Generator {
     if (!this.pluginManifest) {
       try {
         this.pluginManifest = this._getPluginManifest(this.packageName);
-      } catch (_) {
+      } catch {
         // This will fall through to the next conditional statement.
       }
     }
@@ -144,7 +144,7 @@ module.exports = class extends eg.Generator {
 
     try {
       pluginManifest = require(pluginPath);
-    } catch (_) {
+    } catch {
       pluginManifest = parentRequire(pluginPath);
     }
 
